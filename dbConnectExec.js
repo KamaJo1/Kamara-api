@@ -1,12 +1,12 @@
 const sql = require ("mssql");
 
-const rockWellConfig = require("./config.js");
+const josephKaConfig = require("./config.js");
 
 const config = {
-    user: rockWellConfig.DB.user,
-    password: rockWellConfig.DB.password,
-    server: rockWellConfig.DB.server, // You can use 'localhost\\instance' to connect to named instance
-    database: rockWellConfig.DB.database,
+    user: josephKaConfig.DB.user,
+    password: josephKaConfig.DB.password,
+    server: josephKaConfig.DB.server, // You can use 'localhost\\instance' to connect to named instance
+    database: josephKaConfig.DB.database,
 }
 
 async function executeQuery(aQuery){
