@@ -50,11 +50,13 @@ app.get("/",(req,res)=>{
 //this will make sure to send the 409 error if the user account has been created 
     if (existingUser[0]){
         return res.status(409).send("Duplicate email");};
+//this is where the hasings for the password is taking place 
 
+        let hashedPassword = bcrypt.hashSync(password);
 
     let insertQuery = 
         `INSERT INTO Customer (Fname,Lname,Email,Password)
-        VALUES	('${Fname}', '${Lname}','${Email}','${password}')`;
+        VALUES	('${Fname}', '${Lname}','${Email}','${hashedPassword}')`;
 
 // console.log(insertQuery);
 
@@ -68,12 +70,12 @@ app.get("/",(req,res)=>{
         })
     });
 
-    app.get("/movies",(req,res)=>{
+    app.get("/Work",(req,res)=>{
         
         db.executeQuery(`SELECT*
-        FROM movie
-        LEFT JOIN Genre
-        ON genre.GenrePK = movie.GenreFK`)
+            FROM Work
+            LEFT JOIN ProjectType
+            ON ProjectType.ProjectName = 'Work.ProjectTypeFK'`)
         .then((theResults)=>{
             res.status (200).send(theResults);
         }
