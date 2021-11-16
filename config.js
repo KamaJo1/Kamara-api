@@ -7,6 +7,8 @@ const config = {
         database: 'josephka',
  
     },
+
+    JWT: "mysupersecret",
 };
 module.exports = config;
 

@@ -1,8 +1,10 @@
-const { response, application } = require('express');
+const express = require("express")
 const bcrypt = require("bcryptjs");
-const express = require('express')
+const jwt = require("jsonwebtoken");
 
 const db = require("./dbConnectExec.js");
+const josephKaConfig = require('./config.js');
+
 
 const app = express(); 
 
@@ -15,7 +17,7 @@ app.listen(5000,()=>{
 
 });
 
-app.get("/hi",(req,res)=>{
+app.get("/hi",(req,res)=>{ 
 res.send("Hello world");
 });
 
@@ -26,6 +28,86 @@ app.get("/",(req,res)=>{
     //app.post() 
     //app.put()
 
+//this is where the login info is saved 
+
+app.post("/Customer/login",async (req,res)=>{
+// console.log('/Customer/login called',req.body);
+
+
+//1. data validation 
+
+let email = req.body.Email;
+
+let password = req.body.password; 
+
+if (!email || !password){
+    return res.status(400).send("Bad request");
+}
+
+//2.check if user exist in data base 
+let query = `SELECT * 
+From Customer
+WHERE Email = '${email}'`;
+
+let result;
+
+
+try {
+
+result =  await db.executeQuery(query);
+
+}catch(myError){
+   
+    // console.log("error in /contacts/login", myError);
+    
+    return res.status(500).send();
+}
+//  console.log(result);
+
+ if(!result[0]) {return res.status(401).send("Invalid user cerdentails")}
+
+
+//3. check password 
+let user = result[0];
+
+if (!bcrypt.compareSync(password,user.Password)){
+// console.log("invalid passoword ");
+    
+return res.status(401).send("Invalid User Credentails");
+}
+
+//4.generate token
+
+let token = jwt.sign({pk: user.CustomerID },josephKaConfig.JWT,{expiresIn: "60 minutes"});
+
+// console.log("Token ", token);
+
+
+//5. save token in DB and send reposne back 
+
+let setTokenQuery = `UPDATE Customer 
+SET token = '${token}'
+WHERE CustomerID = ${user.CustomerID}`
+
+try{
+     await db.executeQuery(setTokenQuery);
+
+     res.status(200).send({
+         token: token,
+         user:{
+             Fname: user.Fname,
+             Lname: user.Lname,
+             email: user.Email,
+             CustomerID: user.CustomerID
+         },
+     });
+}
+catch(myError){
+console.log("error in setting uer token", myError).res.status(500).send();
+}
+
+})
+
     //creating the end point for the API
     app.post("/Customer",async (req,res)=>{
         // res.send("/contacts called");
@@ -35,14 +117,14 @@ app.get("/",(req,res)=>{
         //the naming of the objects must match the body 
         let Fname = req.body.Fname;
         let Lname = req.body.Lname;
-        let Email = req.body.Email;
-        let password = req.body.password;
+        let email = req.body.Email;
+        let password = req.body.Password;
         // let Token = req.body.Token;
 
         //
-        let emailCheckQuery = `SELECT email 
+        let emailCheckQuery = `SELECT Email 
         from Customer
-        where Email = '${Email}'`;
+        where Email = '${email}'`;
 
       let existingUser= await  db.executeQuery(emailCheckQuery);
 
@@ -56,7 +138,7 @@ app.get("/",(req,res)=>{
 
     let insertQuery = 
         `INSERT INTO Customer (Fname,Lname,Email,Password)
-        VALUES	('${Fname}', '${Lname}','${Email}','${hashedPassword}')`;
+        VALUES	('${Fname}', '${Lname}','${email}','${hashedPassword}')`;
 
 // console.log(insertQuery);
 
