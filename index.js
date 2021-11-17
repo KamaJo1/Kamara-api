@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 
 const db = require("./dbConnectExec.js");
 const josephKaConfig = require('./config.js');
+const auth = require("./middleWare/authenticate")
 
 
 const app = express(); 
@@ -13,7 +14,7 @@ app.use(express.json());
 
 app.listen(5000,()=>{
 
-    // console.log("App is running on port 5000");
+    console.log("App is running on port 5000");
 
 });
 
@@ -27,6 +28,48 @@ app.get("/",(req,res)=>{
 
     //app.post() 
     //app.put()
+   
+app.post("/Review", auth,(req,res)=>{
+    try{
+       
+       let CustomerFK= req.body.CustomerFK;
+        let summary = req.body.Summary;
+        let rating = req.body.Rating;
+
+        if (!CustomerFK || !summary || !rating || !Number.isInteger(rating) ) {return res.status(400).send("bad requst")};
+        
+        summary = summary.replace("'","' '");
+            
+            // console.log("Summary",summary);
+
+            // console.log("here is the Customer", req.customer)
+
+            let insertQuery = `INSERT INTO Review (Rating,Summary,CustomerFK)
+            OUTPUT inserted.ReviewID,inserted.Summary,inserted.Rating,inserted.CustomerFK,inserted.WorkFK
+            VALUES ('${rating}', '${summary}','${CustomerFK}','${req.customer.CustomerID}')`
+
+let insertedReview = await db.executeQuery(insertQuery);
+
+// console.log("inserted review ", insertedReview);
+
+            // res.send("here is the response");
+
+            res.status(201).send(insertedReview[0]);
+
+
+    }
+    catch(err){
+        console.log("erro in POST /reviews", err);
+
+        res.status(500).send();
+
+    }
+})
+
+app.get("/Customer/me",auth,(req,res)=>{
+
+    res.send(req.customer)
+})
 
 //this is where the login info is saved 
 
@@ -97,13 +140,14 @@ try{
          user:{
              Fname: user.Fname,
              Lname: user.Lname,
-             email: user.Email,
+             Email: user.Email,
              CustomerID: user.CustomerID
          },
      });
 }
 catch(myError){
-console.log("error in setting uer token", myError).res.status(500).send();
+console.log("error in setting uer token", myError)
+res.status(500).send();
 }
 
 })
@@ -117,14 +161,14 @@ console.log("error in setting uer token", myError).res.status(500).send();
         //the naming of the objects must match the body 
         let Fname = req.body.Fname;
         let Lname = req.body.Lname;
-        let email = req.body.Email;
+        let Email = req.body.Email;
         let password = req.body.Password;
         // let Token = req.body.Token;
 
         //
         let emailCheckQuery = `SELECT Email 
         from Customer
-        where Email = '${email}'`;
+        where Email = '${Email}'`;
 
       let existingUser= await  db.executeQuery(emailCheckQuery);
 
@@ -138,7 +182,7 @@ console.log("error in setting uer token", myError).res.status(500).send();
 
     let insertQuery = 
         `INSERT INTO Customer (Fname,Lname,Email,Password)
-        VALUES	('${Fname}', '${Lname}','${email}','${hashedPassword}')`;
+        VALUES	('${Fname}', '${Lname}','${Email}','${hashedPassword}')`;
 
 // console.log(insertQuery);
 
