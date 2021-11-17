@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/6e0bd81a-69c7-48bc-81c5-9f869343320f/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/cis410-fa21-kamara-api",
+    "appService.deploySubpath": "."
+}

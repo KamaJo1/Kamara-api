@@ -11,10 +11,10 @@ const app = express();
 
 //this is to make app reonize incoming data
 app.use(express.json());
+const PORT = process.env.PORT || 5000;
+app.listen(PORT,()=>{
 
-app.listen(5000,()=>{
-
-    console.log("App is running on port 5000");
+    console.log(`App is running on port ${PORT}`);
 
 });
 
