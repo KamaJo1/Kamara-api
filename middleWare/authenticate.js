@@ -3,7 +3,7 @@ const db = require("../dbConnectExec.js")
 const josephKaConfig = require("../config.js")
 
 const auth =async(req,res,next)=>{ 
-    // console.log("In the middleware",req.header("Authorization"));
+    console.log("In the middleware",req.header("Authorization"));
     // next();
 
     try{
@@ -12,8 +12,8 @@ const auth =async(req,res,next)=>{
         let myToken = req.header("Authorization").replace("Bearer ","");
         // console.log("token", myToken);
         let decoded = jwt.verify(myToken,josephKaConfig.JWT)
-
-        let CustomerFK = decoded.CustomerFK;
+            console.log(decoded);
+        let CustomerFK = decoded.pk;
         console.log(CustomerFK);
         //2. compare token with database 
         let query = `SELECT CustomerID ,FName,Lname ,Email,Password ,Token
